@@ -46,23 +46,31 @@
   }
 
   function updateDot(dot, state, data) {
+    let inner = dot.querySelector('.mp-dot-inner');
+    if (!inner) {
+      inner = document.createElement('div');
+      inner.className = 'mp-dot-inner';
+      dot.appendChild(inner);
+    }
+
     dot.className = 'mp-price-dot';
+    inner.innerHTML = '';
     
     switch (state) {
       case 'loading':
         dot.classList.add('mp-loading');
-        dot.innerHTML = '<div class="mp-dot-inner"><div class="mp-spinner"></div></div>';
+        inner.innerHTML = '<div class="mp-spinner"></div>';
         break;
       case 'success':
         dot.classList.add('mp-success');
-        dot.innerHTML = `<div class="mp-dot-inner">Mana Pool: $${Number(data.price).toFixed(2)}</div>`;
+        inner.innerHTML = `<span>Mana Pool: $${Number(data.price).toFixed(2)}</span>`;
         break;
       case 'error':
         dot.classList.add('mp-error');
-        dot.innerHTML = `<div class="mp-dot-inner">✕ error</div>`;
+        inner.innerHTML = '<span>✕ error</span>';
         break;
       default:
-        dot.innerHTML = '<div class="mp-dot-inner"></div>';
+        inner.innerHTML = '';
     }
   }
 
