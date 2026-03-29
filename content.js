@@ -1,5 +1,7 @@
 (function() {
   const cardPrices = new Map();
+  let hoverTimeout = null;
+  const HOVER_DELAY = 1000;
 
   function findCardImage(container) {
     const imageSelectors = [
@@ -193,32 +195,44 @@
 
     if (cached && cached.loading) return;
 
-    const cardName = extractCardName(target);
-    const setCode = extractSetCode(target);
-    if (!cardName) return;
+    if (hoverTimeout) clearTimeout(hoverTimeout);
 
-    updateDot(dot, 'loading');
+    hoverTimeout = setTimeout(() => {
+      const cardName = extractCardName(target);
+      const setCode = extractSetCode(target);
+      if (!cardName) return;
 
-    cardPrices.set(cardKey, { loading: true });
+      updateDot(dot, 'loading');
 
-    chrome.runtime.sendMessage(
-      { type: 'GET_PRICE', cardName, setCode },
-      ({ price, error }) => {
-        if (error || price === null) {
-          cardPrices.set(cardKey, { error: true });
-          updateDot(dot, 'error');
-        } else {
-          cardPrices.set(cardKey, { price });
-          updateDot(dot, 'success', { price });
+      cardPrices.set(cardKey, { loading: true });
+
+      chrome.runtime.sendMessage(
+        { type: 'GET_PRICE', cardName, setCode },
+        ({ price, error }) => {
+          if (error || price === null) {
+            cardPrices.set(cardKey, { error: true });
+            updateDot(dot, 'error');
+          } else {
+            cardPrices.set(cardKey, { price });
+            updateDot(dot, 'success', { price });
+          }
         }
-      }
-    );
+      );
+    }, HOVER_DELAY);
+  }
+
+  function handleMouseLeave() {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = null;
+    }
   }
 
   function init() {
     initCards();
     
     document.addEventListener('mouseover', handleMouseEnter);
+    document.addEventListener('mouseout', handleMouseLeave);
     
     const observer = new MutationObserver(() => {
       scheduleInit();
