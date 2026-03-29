@@ -1,6 +1,7 @@
 (function() {
   const cardPrices = new Map();
   let hoverTimeout = null;
+  let lastHoveredCard = null;
   const HOVER_DELAY = 1000;
 
   function findCardImage(container) {
@@ -57,6 +58,10 @@
     inner.innerHTML = '';
     
     switch (state) {
+      case 'waiting':
+        dot.classList.add('mp-waiting');
+        inner.innerHTML = '<div class="mp-waiting-spinner"></div>';
+        break;
       case 'loading':
         dot.classList.add('mp-loading');
         inner.innerHTML = '<div class="mp-spinner"></div>';
@@ -181,6 +186,8 @@
     const cardEl = getCardElement(target);
     if (!cardEl) return;
 
+    lastHoveredCard = cardEl;
+
     let dot = cardEl.querySelector('.mp-price-dot');
 
     if (!dot) {
@@ -204,6 +211,8 @@
     if (cached && cached.loading) return;
 
     if (hoverTimeout) clearTimeout(hoverTimeout);
+
+    updateDot(dot, 'waiting');
 
     hoverTimeout = setTimeout(() => {
       const cardName = extractCardName(target);
@@ -233,6 +242,14 @@
     if (hoverTimeout) {
       clearTimeout(hoverTimeout);
       hoverTimeout = null;
+      
+      if (lastHoveredCard) {
+        const dot = lastHoveredCard.querySelector('.mp-price-dot');
+        if (dot) {
+          updateDot(dot, 'default');
+        }
+        lastHoveredCard = null;
+      }
     }
   }
 
