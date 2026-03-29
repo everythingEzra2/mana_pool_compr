@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Mana Pool Price Checker",
+  "version": "1.0",
+  "description": "Show Mana Pool prices when browsing TCGPlayer and Scryfall",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://manapool.com/*",
+    "https://*.tcgplayer.com/*",
+    "https://*.scryfall.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.tcgplayer.com/*",
+        "https://*.scryfall.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "mana-pool-price-checker",
+  "version": "1.0.0",
+  "description": "Chrome extension to show Mana Pool prices on TCGPlayer and Scryfall",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui"
+  },
+  "keywords": ["chrome-extension", "magic-the-gathering", "manapool"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}
