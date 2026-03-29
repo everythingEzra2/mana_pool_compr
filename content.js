@@ -53,7 +53,7 @@
         break;
       case 'success':
         dot.classList.add('mp-success');
-        dot.innerHTML = `<div class="mp-dot-inner">Mana Pool: $${data.price.toFixed(2)}</div>`;
+        dot.innerHTML = `<div class="mp-dot-inner">Mana Pool: $${Number(data.price).toFixed(2)}</div>`;
         break;
       case 'error':
         dot.classList.add('mp-error');

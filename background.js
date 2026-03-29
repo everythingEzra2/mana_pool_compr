@@ -27,7 +27,11 @@ async function fetchManaPoolPrice(cardName, setCode = null) {
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
-    const price = data.prices?.[0]?.price ?? data.prices?.[0]?.condition_price ?? null;
+    console.log(data);
+    let card0 = data.cards?.[0];
+    console.log(card0);
+    const price_cents = card0?.from_price_cents ?? null;
+    const price = price_cents !== null ? (price_cents / 100).toFixed(2) : null;
     
     cache.set(cacheKey, { price, timestamp: Date.now() });
     return price;
