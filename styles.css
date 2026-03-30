@@ -23,8 +23,9 @@
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
-  transition: width 300ms ease, background-color 300ms ease;
+  transition: width 300ms ease, background-color 300ms ease, opacity 100ms ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0.7;
 }
 
 .mp-dot-inner span {
@@ -37,6 +38,12 @@
 .mp-price-dot.mp-error .mp-dot-inner {
   width: auto;
   max-width: 200px;
+  opacity: 1;
+}
+
+.mp-price-dot.mp-loading .mp-dot-inner,
+.mp-price-dot.mp-hovering .mp-dot-inner {
+  opacity: 1;
 }
 
 .mp-price-dot.mp-success .mp-dot-inner span,

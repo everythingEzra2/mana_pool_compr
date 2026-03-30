@@ -54,7 +54,8 @@
       dot.appendChild(inner);
     }
 
-    dot.className = 'mp-price-dot';
+    const isHovering = dot.classList.contains('mp-hovering');
+    dot.className = 'mp-price-dot' + (isHovering ? ' mp-hovering' : '');
     inner.innerHTML = '';
     
     switch (state) {
@@ -226,6 +227,7 @@
 
     if (hoverTimeout) clearTimeout(hoverTimeout);
 
+    dot.classList.add('mp-hovering');
     updateDot(dot, 'waiting');
 
     hoverTimeout = setTimeout(() => {
@@ -234,6 +236,7 @@
       if (!cardName) return;
 
       updateDot(dot, 'loading');
+      dot.classList.add('mp-hovering');
 
       cardPrices.set(cardKey, { loading: true });
 
@@ -260,6 +263,7 @@
       if (lastHoveredCard) {
         const dot = lastHoveredCard.querySelector('.mp-price-dot');
         if (dot) {
+          dot.classList.remove('mp-hovering');
           updateDot(dot, 'default');
         }
         lastHoveredCard = null;
