@@ -186,6 +186,20 @@
     const cardEl = getCardElement(target);
     if (!cardEl) return;
 
+    const imageSelectors = [
+      '.product-image',
+      '.product-image-gallery',
+      'img.product-image-img',
+      '.main-image',
+      '.card-image',
+      '[data-testid="product-image"]',
+      '.search-result__image',
+      '.product-card__image',
+      '.results-image'
+    ];
+    const isOverImage = imageSelectors.some(sel => target.closest(sel));
+    if (!isOverImage) return;
+
     lastHoveredCard = cardEl;
 
     let dot = cardEl.querySelector('.mp-price-dot');
