@@ -38,7 +38,7 @@
 .mp-price-dot.mp-error .mp-dot-inner {
   width: auto;
   max-width: 200px;
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .mp-price-dot.mp-loading .mp-dot-inner,

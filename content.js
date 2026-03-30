@@ -256,18 +256,28 @@
   }
 
   function handleMouseLeave() {
+    const cardEl = lastHoveredCard;
+    
     if (hoverTimeout) {
       clearTimeout(hoverTimeout);
       hoverTimeout = null;
-      
-      if (lastHoveredCard) {
-        const dot = lastHoveredCard.querySelector('.mp-price-dot');
-        if (dot) {
+    }
+    
+    if (cardEl && cardEl.isConnected) {
+      const dot = cardEl.querySelector('.mp-price-dot');
+      if (dot) {
+        const cardKey = dot.dataset.key;
+        const cached = cardPrices.get(cardKey);
+        const isLoaded = cached && (cached.price !== undefined || cached.error);
+        
+        if (isLoaded) {
+          dot.classList.remove('mp-hovering');
+        } else {
           dot.classList.remove('mp-hovering');
           updateDot(dot, 'default');
         }
-        lastHoveredCard = null;
       }
+      lastHoveredCard = null;
     }
   }
 
