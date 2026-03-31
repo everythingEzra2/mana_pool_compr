@@ -69,7 +69,17 @@
         break;
       case 'success':
         dot.classList.add('mp-success');
-        inner.innerHTML = `<span>Mana Pool: $${Number(data.price).toFixed(2)}</span>`;
+        const manaPoolPrice = Number(data.price);
+        const currentPrice = data.currentPrice;
+        
+        console.log('Mana Pool Price:', manaPoolPrice, 'Current Price:', currentPrice);
+        
+        if (currentPrice !== null && currentPrice > manaPoolPrice) {
+          console.log('Adding mp-best-price class');
+          dot.classList.add('mp-best-price');
+        }
+        
+        inner.innerHTML = `<span>Mana Pool: $${manaPoolPrice.toFixed(2)}</span>`;
         break;
       case 'error':
         dot.classList.add('mp-error');
@@ -159,6 +169,50 @@
     return null;
   }
 
+  function extractCurrentPrice(element) {
+    const cardEl = getCardElement(element);
+    if (!cardEl) {
+      console.log('extractCurrentPrice: no card element');
+      return null;
+    }
+
+    const selectors = [
+      '.product-details__price',
+      '[data-testid="product-price"]',
+      '.search-result__price',
+      '.product-card__price',
+      '.price',
+      '.current-price',
+      '[data-cy="card-price"]'
+    ];
+
+    for (const sel of selectors) {
+      const el = cardEl.querySelector(sel);
+      if (el) {
+        const text = el.textContent.trim();
+        console.log('Found price element:', sel, 'text:', text);
+        const match = text.match(/\$(\d+(?:\.\d{1,2})?)/);
+        if (match) {
+          const price = parseFloat(match[1]);
+          if (!isNaN(price) && price > 0) {
+            console.log('Parsed price:', price);
+            return price;
+          }
+        }
+      }
+    }
+    
+    const priceTextMatch = cardEl.textContent.match(/listings from.*?\$(\d+(?:\.\d{1,2})?)/i);
+    if (priceTextMatch) {
+      const price = parseFloat(priceTextMatch[1]);
+      console.log('Found price from listings text:', price);
+      return price;
+    }
+    
+    console.log('No price found');
+    return null;
+  }
+
   function initCards() {
     const cards = document.querySelectorAll('.card, .search-result, .product-card, [data-card-id], .card-item, .results-item, .product-details, .product-container, .product-page');
     
@@ -217,9 +271,10 @@
 
     const cardKey = dot.dataset.key;
     const cached = cardPrices.get(cardKey);
+    const currentPrice = extractCurrentPrice(target);
 
     if (cached && cached.price !== undefined) {
-      updateDot(dot, 'success', { price: cached.price });
+      updateDot(dot, 'success', { price: cached.price, currentPrice });
       return;
     }
 
@@ -235,6 +290,8 @@
       const setCode = extractSetCode(target);
       if (!cardName) return;
 
+      const currentPrice = extractCurrentPrice(target);
+
       updateDot(dot, 'loading');
       dot.classList.add('mp-hovering');
 
@@ -248,7 +305,7 @@
             updateDot(dot, 'error');
           } else {
             cardPrices.set(cardKey, { price });
-            updateDot(dot, 'success', { price });
+            updateDot(dot, 'success', { price, currentPrice });
           }
         }
       );
