@@ -169,6 +169,34 @@
     return null;
   }
 
+  function extractCardNumber(element) {
+    const cardEl = getCardElement(element);
+    if (!cardEl) return null;
+
+    const selectors = [
+      '.product-details__number',
+      '[data-testid="product-number"]',
+      '.search-result__number',
+      '.card-number',
+      '.product-card__number'
+    ];
+
+    for (const sel of selectors) {
+      const el = cardEl.querySelector(sel);
+      if (el) {
+        const text = el.textContent.trim();
+        const match = text.match(/\d+/);
+        if (match) return match[0];
+      }
+    }
+
+    const text = cardEl.textContent;
+    const setMatch = text.match(/(?:set|set:|variation)\s*#?\s*(\d+)/i);
+    if (setMatch) return setMatch[1];
+
+    return null;
+  }
+
   function extractCurrentPrice(element) {
     const cardEl = getCardElement(element);
     if (!cardEl) {
@@ -291,6 +319,7 @@
       if (!cardName) return;
 
       const currentPrice = extractCurrentPrice(target);
+      const cardNumber = extractCardNumber(target);
 
       updateDot(dot, 'loading');
       dot.classList.add('mp-hovering');
@@ -298,7 +327,7 @@
       cardPrices.set(cardKey, { loading: true });
 
       chrome.runtime.sendMessage(
-        { type: 'GET_PRICE', cardName, setCode },
+        { type: 'GET_PRICE', cardName, setCode, cardNumber },
         ({ price, error }) => {
           if (error || price === null) {
             cardPrices.set(cardKey, { error: true });
