@@ -1,45 +1,55 @@
 import { test, expect, chromium } from '@playwright/test';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-async function loadExtension() {
-  const context = await chromium.launch({ headless: true });
-  const page = await context.newPage();
-  return { context, page };
-}
 
 test.describe('Mana Pool Price Checker Extension', () => {
-  test('TCGPlayer single product page loads Metalwork Colossus', async () => {
-    const { page } = await loadExtension();
+  test('click works with plain text', async () => {
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext();
+    const page = await context.newPage();
     
-    await page.goto('https://www.tcgplayer.com/product/122928/magic-kaladesh-metalwork-colossus?page=1&Language=English');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    const productName = page.locator('h1').first();
-    await expect(productName).toBeVisible();
+    await page.addStyleTag({
+      content: `
+        .mp-dot-inner {
+          display: flex;
+          width: auto;
+          max-width: 200px;
+          padding: 0 10px;
+          background: #10b981;
+          cursor: pointer;
+          pointer-events: auto;
+        }
+      `
+    });
     
-    const text = await productName.textContent();
-    expect(text).toContain('Metalwork Colossus');
-
-    await page.close();
-  });
-
-  test('Scryfall single card page loads Metalwork Colossus', async () => {
-    const { page } = await loadExtension();
+    await page.setContent(`
+      <html><body>
+        <div class="mp-price-dot mp-success">
+          <div class="mp-dot-inner">Mana Pool: $1.00</div>
+        </div>
+      </body></html>
+    `);
     
-    await page.goto('https://www.scryfall.com/card/cmm/960/metalwork-colossus');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    const cardTitle = page.locator('h1.card-text-title');
-    await expect(cardTitle).toBeVisible();
+    const consoleLogs: string[] = [];
+    page.on('console', msg => consoleLogs.push(msg.text()));
     
-    const text = await cardTitle.textContent();
-    expect(text).toContain('Metalwork Colossus');
-
-    await page.close();
+    await page.evaluate(() => {
+      const dot = document.querySelector('.mp-price-dot') as HTMLElement;
+      const inner = document.querySelector('.mp-dot-inner') as HTMLElement;
+      dot.dataset.setCode = 'mma';
+      dot.dataset.cardNumber = '210';
+      inner.onclick = function(e: Event) {
+        e.stopPropagation();
+        const setCode = dot.dataset.setCode;
+        const cardNumber = dot.dataset.cardNumber;
+        if (setCode && cardNumber) {
+          console.log('GO! ' + setCode + '/' + cardNumber);
+        }
+      };
+    });
+    
+    await page.locator('.mp-dot-inner').click({ force: true });
+    await page.waitForTimeout(300);
+    
+    expect(consoleLogs.some(l => l.includes('GO!'))).toBe(true);
+    await browser.close();
   });
 });

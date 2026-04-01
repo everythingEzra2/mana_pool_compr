@@ -7,7 +7,6 @@
   font-size: 11px;
   font-weight: 500;
   line-height: 1;
-  pointer-events: none;
 }
 
 .mp-dot-inner {
@@ -26,6 +25,8 @@
   transition: width 300ms ease, background-color 300ms ease, opacity 100ms ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   opacity: 0.7;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .mp-dot-inner span {
@@ -39,17 +40,19 @@
   width: auto;
   max-width: 200px;
   opacity: 1 !important;
-}
-
-.mp-price-dot.mp-loading .mp-dot-inner,
-.mp-price-dot.mp-hovering .mp-dot-inner {
-  opacity: 1;
+  overflow: visible;
+  padding: 0 10px;
 }
 
 .mp-price-dot.mp-success .mp-dot-inner span,
 .mp-price-dot.mp-error .mp-dot-inner span {
   opacity: 1;
   transition-delay: 150ms;
+}
+
+.mp-price-dot.mp-loading .mp-dot-inner,
+.mp-price-dot.mp-hovering .mp-dot-inner {
+  opacity: 1;
 }
 
 .mp-price-dot.mp-waiting .mp-dot-inner,

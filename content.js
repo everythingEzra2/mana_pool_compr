@@ -43,10 +43,12 @@
       cardElement.style.position = cardElement.style.position || 'relative';
       cardElement.appendChild(dot);
     }
+
     return dot;
   }
 
   function updateDot(dot, state, data) {
+    // console.log('update dot')
     let inner = dot.querySelector('.mp-dot-inner');
     if (!inner) {
       inner = document.createElement('div');
@@ -55,7 +57,10 @@
     }
 
     const isHovering = dot.classList.contains('mp-hovering');
-    dot.className = 'mp-price-dot' + (isHovering ? ' mp-hovering' : '');
+    const existingClasses = Array.from(dot.classList).filter(c => 
+      c.startsWith('mp-') && !['mp-price-dot', 'mp-hovering', 'mp-waiting', 'mp-loading', 'mp-success', 'mp-error', 'mp-best-price'].includes(c)
+    ).join(' ');
+    dot.className = 'mp-price-dot' + (isHovering ? ' mp-hovering' : '') + (existingClasses ? ' ' + existingClasses : '');
     inner.innerHTML = '';
     
     switch (state) {
@@ -72,18 +77,48 @@
         const manaPoolPrice = Number(data.price);
         const currentPrice = data.currentPrice;
         
-        console.log('Mana Pool Price:', manaPoolPrice, 'Current Price:', currentPrice);
+        // console.log('Mana Pool Price:', manaPoolPrice, 'Current Price:', currentPrice);
         
         if (currentPrice !== null && currentPrice > manaPoolPrice) {
-          console.log('Adding mp-best-price class');
+          // console.log('Adding mp-best-price class');
           dot.classList.add('mp-best-price');
         }
         
-        inner.innerHTML = `<span>Mana Pool: $${manaPoolPrice.toFixed(2)}</span>`;
+        inner.innerHTML = `Mana Pool: $${manaPoolPrice.toFixed(2)}`;
+        
+        if (!dot.dataset.clickHandlerAdded) {
+          dot.dataset.clickHandlerAdded = 'true';
+          inner.style.cursor = 'pointer';
+          inner.onclick = function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            console.log('test');
+            const setCode = dot.dataset.setCode;
+            const cardNumber = dot.dataset.cardNumber;
+            
+            const isValidSetCode = setCode && setCode !== 'null' && setCode !== 'undefined';
+            const isValidCardNumber = cardNumber && cardNumber !== 'null' && cardNumber !== 'undefined';
+            
+            // if (isValidSetCode && isValidCardNumber) {
+              const url = `https://manapool.com/card/${setCode.toLowerCase()}/${cardNumber}`;
+              window.open(url, '_blank');
+            // }
+          };
+        }
         break;
       case 'error':
         dot.classList.add('mp-error');
         inner.innerHTML = '<span>✕ error</span>';
+        
+        if (!dot.dataset.clickHandlerAdded) {
+          dot.dataset.clickHandlerAdded = 'true';
+          inner.style.cursor = 'pointer';
+          inner.onclick = function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+          };
+        }
         break;
       default:
         inner.innerHTML = '';
@@ -200,7 +235,7 @@
   function extractCurrentPrice(element) {
     const cardEl = getCardElement(element);
     if (!cardEl) {
-      console.log('extractCurrentPrice: no card element');
+      // console.log('extractCurrentPrice: no card element');
       return null;
     }
 
@@ -218,12 +253,12 @@
       const el = cardEl.querySelector(sel);
       if (el) {
         const text = el.textContent.trim();
-        console.log('Found price element:', sel, 'text:', text);
+        // console.log('Found price element:', sel, 'text:', text);
         const match = text.match(/\$(\d+(?:\.\d{1,2})?)/);
         if (match) {
           const price = parseFloat(match[1]);
           if (!isNaN(price) && price > 0) {
-            console.log('Parsed price:', price);
+            // console.log('Parsed price:', price);
             return price;
           }
         }
@@ -233,11 +268,11 @@
     const priceTextMatch = cardEl.textContent.match(/listings from.*?\$(\d+(?:\.\d{1,2})?)/i);
     if (priceTextMatch) {
       const price = parseFloat(priceTextMatch[1]);
-      console.log('Found price from listings text:', price);
+      // console.log('Found price from listings text:', price);
       return price;
     }
     
-    console.log('No price found');
+    // console.log('No price found');
     return null;
   }
 
@@ -302,6 +337,10 @@
     const currentPrice = extractCurrentPrice(target);
 
     if (cached && cached.price !== undefined) {
+      const setCode = extractSetCode(target);
+      const cardNumber = extractCardNumber(target);
+      dot.dataset.setCode = setCode || '';
+      dot.dataset.cardNumber = cardNumber || '';
       updateDot(dot, 'success', { price: cached.price, currentPrice });
       return;
     }
@@ -334,6 +373,8 @@
             updateDot(dot, 'error');
           } else {
             cardPrices.set(cardKey, { price });
+            dot.dataset.setCode = setCode;
+            dot.dataset.cardNumber = cardNumber;
             updateDot(dot, 'success', { price, currentPrice });
           }
         }
